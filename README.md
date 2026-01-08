@@ -4,8 +4,6 @@
 
 A plugin that enables Lua scripting support for Genisys/PocketMine-MP servers.
 
-**Contributors:** [Ajwyunsx](https://github.com/Ajwyunsx) & [gemini-code-assist](https://github.com/gemini-code-assist)
-
 ## Features
 
 - **Lua Script Plugins**: Write plugins in Lua instead of PHP
