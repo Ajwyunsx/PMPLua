@@ -463,31 +463,108 @@ class Main extends PluginBase{
 			"macos" => ["lua.so"]
 		];
 		
+		$dependencyNames = [
+			"windows" => ["liblua.dll"],
+			"linux" => [],
+			"macos" => []
+		];
+		
+		// Find DLLs in plugin folder
 		$searchPaths = [
 			$pluginDir . DIRECTORY_SEPARATOR . "libs" . DIRECTORY_SEPARATOR . $os,
 			$pluginDir . DIRECTORY_SEPARATOR . "libs",
 			$pluginDir,
 		];
 		
+		$foundExtPath = null;
+		$foundDepPaths = [];
+		
 		foreach($searchPaths as $searchPath){
 			if(!is_dir($searchPath)) continue;
-			foreach($extensionNames[$os] ?? [] as $extName){
-				$extPath = $searchPath . DIRECTORY_SEPARATOR . $extName;
-				if(file_exists($extPath)){
-					$this->getLogger()->info("Found: " . $extPath);
-					break 2;
+			
+			// Find extension DLL
+			if($foundExtPath === null){
+				foreach($extensionNames[$os] ?? [] as $extName){
+					$extPath = $searchPath . DIRECTORY_SEPARATOR . $extName;
+					if(file_exists($extPath)){
+						$foundExtPath = $extPath;
+						$this->getLogger()->info("Found extension: " . $extPath);
+					}
+				}
+			}
+			
+			// Find dependency DLLs
+			foreach($dependencyNames[$os] ?? [] as $depName){
+				$depPath = $searchPath . DIRECTORY_SEPARATOR . $depName;
+				if(file_exists($depPath) && !isset($foundDepPaths[$depName])){
+					$foundDepPaths[$depName] = $depPath;
+					$this->getLogger()->info("Found dependency: " . $depPath);
 				}
 			}
 		}
-
-		if(!function_exists("dl")) return;
+		
+		if($foundExtPath === null){
+			$this->getLogger()->warning("Extension DLL not found in plugin folder");
+			return;
+		}
+		
+		// Get PHP directories
+		$phpExtDir = ini_get("extension_dir");
+		$phpBinDir = dirname(PHP_BINARY);
+		
+		$this->getLogger()->info("PHP ext dir: " . $phpExtDir);
+		$this->getLogger()->info("PHP bin dir: " . $phpBinDir);
+		
+		// Copy extension DLL to PHP extension directory
+		$extName = basename($foundExtPath);
+		$targetExtPath = $phpExtDir . DIRECTORY_SEPARATOR . $extName;
+		
+		if(!file_exists($targetExtPath) || filesize($targetExtPath) !== filesize($foundExtPath)){
+			$this->getLogger()->info("Copying $extName to PHP ext dir...");
+			if(@copy($foundExtPath, $targetExtPath)){
+				$this->getLogger()->info("Copied: " . $targetExtPath);
+			}else{
+				$this->getLogger()->warning("Failed to copy to ext dir. Trying bin dir...");
+				// Try PHP bin directory as fallback
+				$targetExtPath = $phpBinDir . DIRECTORY_SEPARATOR . $extName;
+				if(@copy($foundExtPath, $targetExtPath)){
+					$this->getLogger()->info("Copied to bin dir: " . $targetExtPath);
+				}
+			}
+		}
+		
+		// Copy dependency DLLs to PHP binary directory (for Windows PATH)
+		foreach($foundDepPaths as $depName => $depPath){
+			$targetDepPath = $phpBinDir . DIRECTORY_SEPARATOR . $depName;
+			if(!file_exists($targetDepPath) || filesize($targetDepPath) !== filesize($depPath)){
+				$this->getLogger()->info("Copying $depName to PHP bin dir...");
+				if(@copy($depPath, $targetDepPath)){
+					$this->getLogger()->info("Copied: " . $targetDepPath);
+				}else{
+					$this->getLogger()->warning("Failed to copy $depName");
+				}
+			}
+		}
+		
+		// Try to load using dl()
+		if(!function_exists("dl")){
+			$this->getLogger()->warning("dl() not available. Please add 'extension=$extName' to php.ini");
+			$this->getLogger()->warning("Then restart the server.");
+			return;
+		}
 
 		foreach($extensionNames[$os] ?? [] as $extName){
+			$this->getLogger()->info("Trying to load: " . $extName);
 			if(@dl($extName)){
-				$this->getLogger()->info("Loaded: " . $extName);
+				$this->getLogger()->info("SUCCESS! Loaded: " . $extName);
 				return;
 			}
 		}
+		
+		// If dl() failed, advise user
+		$this->getLogger()->warning("Could not load extension dynamically.");
+		$this->getLogger()->warning("DLLs have been copied. Please RESTART the server.");
+		$this->getLogger()->info("If still not working, add to php.ini: extension=$extName");
 	}
 	
 	private function getOS(){

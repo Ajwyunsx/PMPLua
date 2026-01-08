@@ -1,0 +1,23 @@
+{
+    "name": "lua",
+    "version": "2.0.3",
+    "type": "extension",
+    "license": [
+        "PHP"
+    ],
+    "authors": [
+        {
+            "name": "Johannes Schl\u00fcter",
+            "email": "johannes@php.net"
+        },
+        {
+            "name": "Xinchen Hui",
+            "email": "laruence@php.net"
+        },
+        {
+            "name": "Marcelo Araujo",
+            "email": "msaraujo@php.net"
+        }
+    ],
+    "description": "Embedded lua interpreter"
+}
