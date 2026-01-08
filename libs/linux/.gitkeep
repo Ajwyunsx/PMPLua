@@ -1,0 +1,3 @@
+# Place Linux libraries here
+# - lua.so or php_lua.so
+# - liblua.so

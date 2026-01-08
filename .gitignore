@@ -1,0 +1,23 @@
+# Ignore data folders
+data/
+
+# Ignore downloaded libraries (users should download their own)
+libs/windows/*.dll
+libs/linux/*.so
+libs/macos/*.dylib
+libs/macos/*.so
+
+# Keep the folder structure
+!libs/windows/.gitkeep
+!libs/linux/.gitkeep
+!libs/macos/.gitkeep
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.sublime-*
+
+# Ignore temp files
+*.tmp
+*.log
+*.cache
