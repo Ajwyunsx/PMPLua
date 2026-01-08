@@ -6,8 +6,6 @@
 
 为 Genisys/PocketMine-MP 服务器提供 Lua 脚本支持的插件。
 
-**贡献者:** [Ajwyunsx](https://github.com/Ajwyunsx) & [gemini-code-assist](https://github.com/gemini-code-assist)
-
 ## 功能特性
 
 - **Lua 脚本插件**: 使用 Lua 代替 PHP 编写插件
