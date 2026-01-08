@@ -1,6 +1,10 @@
 # LuaLoader Plugin for Genisys/PocketMine
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A plugin that enables Lua scripting support for Genisys/PocketMine-MP servers.
+
+**Contributors:** [Ajwyunsx](https://github.com/Ajwyunsx) & [gemini-code-assist](https://github.com/gemini-code-assist)
 
 ## Features
 
