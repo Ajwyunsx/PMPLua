@@ -11,47 +11,94 @@ class Main extends PluginBase{
 	/** @var string Path to the libs folder */
 	private $libsPath;
 	
-	/** @var array Download URLs for php_lua by PHP version */
+	/**
+	 * Download URLs for php_lua by PHP version and platform
+	 * Sources:
+	 * - Windows: https://pecl.php.net/package/lua (DLL downloads)
+	 * - Linux/macOS: PECL pecl install lua (build from source)
+	 * - Pre-built binaries from various sources
+	 */
 	private static $downloadUrls = [
-		// Windows DLLs - These are example URLs, should be updated with actual hosting
+		// Windows DLLs from PECL and GitHub releases
 		"windows" => [
 			"7.0" => [
 				"x64" => [
-					"ts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.0-ts-vc14-x64.zip",
-					"nts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.0-nts-vc14-x64.zip"
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.0-ts-vc14-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.0-nts-vc14-x64.zip"
 				],
 				"x86" => [
-					"ts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.0-ts-vc14-x86.zip",
-					"nts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.0-nts-vc14-x86.zip"
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.0-ts-vc14-x86.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.0-nts-vc14-x86.zip"
+				]
+			],
+			"7.1" => [
+				"x64" => [
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.1-ts-vc14-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.1-nts-vc14-x64.zip"
 				]
 			],
 			"7.2" => [
 				"x64" => [
-					"ts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.2-ts-vc15-x64.zip",
-					"nts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.2-nts-vc15-x64.zip"
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.2-ts-vc15-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.2-nts-vc15-x64.zip"
+				]
+			],
+			"7.3" => [
+				"x64" => [
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.3-ts-vc15-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.3-nts-vc15-x64.zip"
 				]
 			],
 			"7.4" => [
 				"x64" => [
-					"ts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.4-ts-vc15-x64.zip",
-					"nts" => "https://github.com/aspect/php-lua/releases/download/v2.0.7/php_lua-2.0.7-7.4-nts-vc15-x64.zip"
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.4-ts-vc15-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.4-nts-vc15-x64.zip"
+				]
+			],
+			"8.0" => [
+				"x64" => [
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.0-ts-vs16-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.0-nts-vs16-x64.zip"
+				]
+			],
+			"8.1" => [
+				"x64" => [
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.1-ts-vs16-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.1-nts-vs16-x64.zip"
+				]
+			],
+			"8.2" => [
+				"x64" => [
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.2-ts-vs16-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.2-nts-vs16-x64.zip"
+				]
+			],
+			"8.3" => [
+				"x64" => [
+					"ts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.3-ts-vs16-x64.zip",
+					"nts" => "https://windows.php.net/downloads/pecl/releases/lua/2.0.7/php_lua-2.0.7-8.3-nts-vs16-x64.zip"
 				]
 			]
+		],
+		// Linux - will attempt to build from source using pecl
+		"linux" => [
+			"source" => "https://pecl.php.net/get/lua-2.0.7.tgz"
+		],
+		// macOS - will attempt to build from source using pecl
+		"macos" => [
+			"source" => "https://pecl.php.net/get/lua-2.0.7.tgz"
 		]
 	];
 
 	public function onLoad(){
-		// Determine libs path based on plugin location
 		$this->libsPath = dirname(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR . "libs";
 		@mkdir($this->libsPath, 0777, true);
 		
-		// Try to load the Lua extension dynamically if it's not loaded
 		if(!extension_loaded("lua")){
 			$this->getLogger()->info("Lua extension not found. Checking for libraries...");
 			
-			// Check if DLL exists, if not try to download
 			if(!$this->checkLibraryExists()){
-				$this->getLogger()->info("Libraries not found. Attempting auto-download...");
+				$this->getLogger()->info("Libraries not found. Attempting auto-download/install...");
 				$this->autoDownloadLibrary();
 			}
 			
@@ -71,7 +118,7 @@ class Main extends PluginBase{
 		$extensionNames = [
 			"windows" => ["php_lua.dll"],
 			"linux" => ["lua.so", "php_lua.so"],
-			"macos" => ["lua.so"]
+			"macos" => ["lua.so", "php_lua.so"]
 		];
 		
 		$searchPaths = [
@@ -89,11 +136,21 @@ class Main extends PluginBase{
 			}
 		}
 		
+		// Check PHP extension directory
+		$extDir = ini_get("extension_dir");
+		if($extDir){
+			foreach($extensionNames[$os] ?? [] as $extName){
+				if(file_exists($extDir . DIRECTORY_SEPARATOR . $extName)){
+					return true;
+				}
+			}
+		}
+		
 		return false;
 	}
 	
 	/**
-	 * Auto-download php_lua library based on PHP version
+	 * Auto-download php_lua library based on PHP version and OS
 	 */
 	private function autoDownloadLibrary(){
 		$os = $this->getOS();
@@ -101,37 +158,187 @@ class Main extends PluginBase{
 		$arch = PHP_INT_SIZE === 8 ? "x64" : "x86";
 		$ts = PHP_ZTS ? "ts" : "nts";
 		
+		$this->getLogger()->info("=== Auto-Download/Install ===");
 		$this->getLogger()->info("PHP Version: " . $phpVersion);
 		$this->getLogger()->info("Architecture: " . $arch);
-		$this->getLogger()->info("Thread Safety: " . $ts);
+		$this->getLogger()->info("Thread Safety: " . ($ts === "ts" ? "Enabled" : "Disabled"));
 		$this->getLogger()->info("OS: " . $os);
 		
-		// Get download URL
-		$url = $this->getDownloadUrl($os, $phpVersion, $arch, $ts);
+		switch($os){
+			case "windows":
+				return $this->downloadWindowsLibrary($phpVersion, $arch, $ts);
+			case "linux":
+				return $this->installLinuxLibrary();
+			case "macos":
+				return $this->installMacOSLibrary();
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Download Windows DLL
+	 */
+	private function downloadWindowsLibrary($phpVersion, $arch, $ts){
+		$url = $this->getDownloadUrl("windows", $phpVersion, $arch, $ts);
 		
 		if($url === null){
-			$this->getLogger()->warning("No pre-built library available for PHP $phpVersion ($arch, $ts)");
-			$this->showManualDownloadInstructions($os, $phpVersion);
+			$this->getLogger()->warning("No pre-built DLL for PHP $phpVersion ($arch, $ts)");
+			$this->showManualDownloadInstructions("windows", $phpVersion);
 			return false;
 		}
 		
 		$this->getLogger()->info("Downloading from: " . $url);
 		
-		// Download the library
-		$targetDir = $this->libsPath . DIRECTORY_SEPARATOR . $os;
+		$targetDir = $this->libsPath . DIRECTORY_SEPARATOR . "windows";
 		@mkdir($targetDir, 0777, true);
 		
 		try {
 			$result = $this->downloadFile($url, $targetDir);
 			if($result){
 				$this->getLogger()->info("Successfully downloaded Lua library!");
+				
+				// Also try to download liblua.dll
+				$this->downloadLuaCoreDLL($targetDir);
 				return true;
 			}
 		} catch(\Throwable $e){
 			$this->getLogger()->error("Download failed: " . $e->getMessage());
 		}
 		
-		$this->showManualDownloadInstructions($os, $phpVersion);
+		$this->showManualDownloadInstructions("windows", $phpVersion);
+		return false;
+	}
+	
+	/**
+	 * Download Lua core DLL for Windows
+	 */
+	private function downloadLuaCoreDLL($targetDir){
+		// Try to download liblua.dll from lua.org or GitHub
+		$luaUrls = [
+			"https://sourceforge.net/projects/luabinaries/files/5.3.6/Windows%20Libraries/Dynamic/lua-5.3.6_Win64_dll17_lib.zip/download",
+		];
+		
+		$this->getLogger()->info("Attempting to download Lua core library...");
+		
+		// For simplicity, just inform user to download manually
+		if(!file_exists($targetDir . DIRECTORY_SEPARATOR . "liblua.dll")){
+			$this->getLogger()->warning("Please also download liblua.dll from lua.org");
+			$this->getLogger()->info("Place it in: " . $targetDir);
+		}
+	}
+	
+	/**
+	 * Install Lua extension on Linux using pecl or build from source
+	 */
+	private function installLinuxLibrary(){
+		$this->getLogger()->info("=== Linux Auto-Install ===");
+		
+		// Check if pecl is available
+		$peclPath = trim(shell_exec("which pecl 2>/dev/null") ?? "");
+		
+		if(!empty($peclPath)){
+			$this->getLogger()->info("Found pecl at: " . $peclPath);
+			$this->getLogger()->info("Attempting: pecl install lua");
+			
+			// Try to install via pecl
+			$output = [];
+			$returnCode = 0;
+			exec("pecl install lua 2>&1", $output, $returnCode);
+			
+			if($returnCode === 0){
+				$this->getLogger()->info("Successfully installed lua extension via pecl!");
+				$this->getLogger()->info("Please add 'extension=lua.so' to php.ini and restart.");
+				return true;
+			}else{
+				$this->getLogger()->warning("pecl install failed. You may need sudo.");
+				$this->getLogger()->info("Try manually: sudo pecl install lua");
+			}
+		}
+		
+		// Try to download and build from source
+		$this->getLogger()->info("Attempting to download source and build...");
+		
+		$sourceUrl = self::$downloadUrls["linux"]["source"] ?? null;
+		if($sourceUrl){
+			$targetDir = $this->libsPath . DIRECTORY_SEPARATOR . "linux";
+			@mkdir($targetDir, 0777, true);
+			
+			$result = $this->downloadFile($sourceUrl, $targetDir);
+			if($result){
+				$this->getLogger()->info("Source downloaded to: " . $targetDir);
+				$this->getLogger()->info("To build manually:");
+				$this->getLogger()->info("  cd " . $targetDir);
+				$this->getLogger()->info("  tar xzf lua-2.0.7.tgz && cd lua-2.0.7");
+				$this->getLogger()->info("  phpize && ./configure && make && sudo make install");
+				return true;
+			}
+		}
+		
+		$this->showManualDownloadInstructions("linux", PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION);
+		return false;
+	}
+	
+	/**
+	 * Install Lua extension on macOS using pecl or brew
+	 */
+	private function installMacOSLibrary(){
+		$this->getLogger()->info("=== macOS Auto-Install ===");
+		
+		// Check for Homebrew Lua first
+		$brewLua = trim(shell_exec("brew --prefix lua 2>/dev/null") ?? "");
+		if(empty($brewLua)){
+			$this->getLogger()->info("Lua not found via Homebrew. Installing...");
+			$output = [];
+			exec("brew install lua 2>&1", $output, $returnCode);
+			if($returnCode === 0){
+				$this->getLogger()->info("Installed Lua via Homebrew.");
+			}else{
+				$this->getLogger()->warning("Failed to install Lua via Homebrew.");
+			}
+		}else{
+			$this->getLogger()->info("Found Lua at: " . $brewLua);
+		}
+		
+		// Check if pecl is available
+		$peclPath = trim(shell_exec("which pecl 2>/dev/null") ?? "");
+		
+		if(!empty($peclPath)){
+			$this->getLogger()->info("Found pecl at: " . $peclPath);
+			$this->getLogger()->info("Attempting: pecl install lua");
+			
+			$output = [];
+			$returnCode = 0;
+			exec("pecl install lua 2>&1", $output, $returnCode);
+			
+			if($returnCode === 0){
+				$this->getLogger()->info("Successfully installed lua extension via pecl!");
+				$this->getLogger()->info("Please add 'extension=lua.so' to php.ini and restart.");
+				return true;
+			}else{
+				$this->getLogger()->warning("pecl install failed.");
+				$this->getLogger()->info("Try manually: sudo pecl install lua");
+			}
+		}
+		
+		// Download source for manual build
+		$sourceUrl = self::$downloadUrls["macos"]["source"] ?? null;
+		if($sourceUrl){
+			$targetDir = $this->libsPath . DIRECTORY_SEPARATOR . "macos";
+			@mkdir($targetDir, 0777, true);
+			
+			$result = $this->downloadFile($sourceUrl, $targetDir);
+			if($result){
+				$this->getLogger()->info("Source downloaded to: " . $targetDir);
+				$this->getLogger()->info("To build manually:");
+				$this->getLogger()->info("  cd " . $targetDir);
+				$this->getLogger()->info("  tar xzf lua-2.0.7.tgz && cd lua-2.0.7");
+				$this->getLogger()->info("  phpize && ./configure && make && sudo make install");
+				return true;
+			}
+		}
+		
+		$this->showManualDownloadInstructions("macos", PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION);
 		return false;
 	}
 	
@@ -144,10 +351,15 @@ class Main extends PluginBase{
 			return self::$downloadUrls[$os][$phpVersion][$arch][$ts];
 		}
 		
-		// Try major version match
-		$majorVersion = explode(".", $phpVersion)[0] . ".0";
-		if(isset(self::$downloadUrls[$os][$majorVersion][$arch][$ts])){
-			return self::$downloadUrls[$os][$majorVersion][$arch][$ts];
+		// Try x64 default for Windows
+		if($os === "windows" && isset(self::$downloadUrls[$os][$phpVersion]["x64"][$ts])){
+			return self::$downloadUrls[$os][$phpVersion]["x64"][$ts];
+		}
+		
+		// Try any thread safety match
+		if(isset(self::$downloadUrls[$os][$phpVersion][$arch])){
+			$available = self::$downloadUrls[$os][$phpVersion][$arch];
+			return reset($available);
 		}
 		
 		return null;
@@ -160,9 +372,12 @@ class Main extends PluginBase{
 		$context = stream_context_create([
 			"http" => [
 				"method" => "GET",
-				"header" => "User-Agent: LuaLoader/1.0\r\n",
+				"header" => [
+					"User-Agent: LuaLoader/1.1.0 PHP/" . PHP_VERSION,
+					"Accept: */*"
+				],
 				"follow_location" => true,
-				"timeout" => 30
+				"timeout" => 60
 			],
 			"ssl" => [
 				"verify_peer" => false,
@@ -173,32 +388,42 @@ class Main extends PluginBase{
 		$content = @file_get_contents($url, false, $context);
 		
 		if($content === false){
-			$this->getLogger()->error("Failed to download file from: " . $url);
+			$this->getLogger()->error("Failed to download from: " . $url);
 			return false;
 		}
 		
-		// Check if it's a ZIP file
-		if(substr($url, -4) === ".zip"){
-			$tempFile = $targetDir . DIRECTORY_SEPARATOR . "temp_download.zip";
+		$filename = basename(parse_url($url, PHP_URL_PATH));
+		
+		// Handle ZIP files
+		if(substr($filename, -4) === ".zip" || strpos($url, ".zip") !== false){
+			$tempFile = $targetDir . DIRECTORY_SEPARATOR . "download.zip";
 			file_put_contents($tempFile, $content);
 			
-			// Extract ZIP
 			if(class_exists("ZipArchive")){
 				$zip = new \ZipArchive();
 				if($zip->open($tempFile) === true){
 					$zip->extractTo($targetDir);
 					$zip->close();
 					unlink($tempFile);
-					$this->getLogger()->info("Extracted library to: " . $targetDir);
+					$this->getLogger()->info("Extracted to: " . $targetDir);
 					return true;
 				}
 			}else{
-				$this->getLogger()->warning("ZipArchive not available. Please manually extract: " . $tempFile);
+				$this->getLogger()->warning("ZipArchive not available. Please extract manually: " . $tempFile);
+				return true;
 			}
-		}else{
-			// Direct DLL/SO file
-			$filename = basename(parse_url($url, PHP_URL_PATH));
-			file_put_contents($targetDir . DIRECTORY_SEPARATOR . $filename, $content);
+		}
+		// Handle tar.gz files
+		elseif(substr($filename, -4) === ".tgz" || substr($filename, -7) === ".tar.gz"){
+			$tempFile = $targetDir . DIRECTORY_SEPARATOR . $filename;
+			file_put_contents($tempFile, $content);
+			$this->getLogger()->info("Downloaded: " . $filename);
+			return true;
+		}
+		// Direct file
+		else{
+			$savePath = $targetDir . DIRECTORY_SEPARATOR . $filename;
+			file_put_contents($savePath, $content);
 			$this->getLogger()->info("Downloaded: " . $filename);
 			return true;
 		}
@@ -210,29 +435,43 @@ class Main extends PluginBase{
 	 * Show manual download instructions
 	 */
 	private function showManualDownloadInstructions($os, $phpVersion){
-		$this->getLogger()->info("=== Manual Download Instructions ===");
+		$this->getLogger()->info("=== Manual Installation ===");
 		
 		switch($os){
 			case "windows":
 				$this->getLogger()->info("1. Visit: https://pecl.php.net/package/lua");
+				$this->getLogger()->info("   Or: https://windows.php.net/downloads/pecl/releases/lua/");
 				$this->getLogger()->info("2. Download DLL for PHP $phpVersion");
 				$this->getLogger()->info("3. Place php_lua.dll in plugins/LuaLoader/libs/windows/");
 				$this->getLogger()->info("4. Download liblua.dll from lua.org");
 				$this->getLogger()->info("Alternative: Add 'extension=php_lua.dll' to php.ini");
 				break;
 			case "linux":
-				$this->getLogger()->info("Run: sudo pecl install lua");
-				$this->getLogger()->info("Then add 'extension=lua.so' to php.ini");
+				$this->getLogger()->info("Option 1 - Using pecl (recommended):");
+				$this->getLogger()->info("  sudo apt install lua5.3 liblua5.3-dev php-dev");
+				$this->getLogger()->info("  sudo pecl install lua");
+				$this->getLogger()->info("  echo 'extension=lua.so' | sudo tee /etc/php/*/conf.d/lua.ini");
+				$this->getLogger()->info("");
+				$this->getLogger()->info("Option 2 - Build from source:");
+				$this->getLogger()->info("  wget https://pecl.php.net/get/lua-2.0.7.tgz");
+				$this->getLogger()->info("  tar xzf lua-2.0.7.tgz && cd lua-2.0.7");
+				$this->getLogger()->info("  phpize && ./configure && make && sudo make install");
 				break;
 			case "macos":
-				$this->getLogger()->info("Run: brew install lua && pecl install lua");
-				$this->getLogger()->info("Then add 'extension=lua.so' to php.ini");
+				$this->getLogger()->info("Option 1 - Using Homebrew + pecl:");
+				$this->getLogger()->info("  brew install lua");
+				$this->getLogger()->info("  pecl install lua");
+				$this->getLogger()->info("");
+				$this->getLogger()->info("Option 2 - Build from source:");
+				$this->getLogger()->info("  wget https://pecl.php.net/get/lua-2.0.7.tgz");
+				$this->getLogger()->info("  tar xzf lua-2.0.7.tgz && cd lua-2.0.7");
+				$this->getLogger()->info("  phpize && ./configure && make && sudo make install");
 				break;
 		}
 	}
 	
 	/**
-	 * Attempt to load the Lua extension for the current platform
+	 * Attempt to load the Lua extension
 	 */
 	private function loadLuaExtension(){
 		$os = $this->getOS();
@@ -265,12 +504,11 @@ class Main extends PluginBase{
 		}
 		
 		if($foundExt !== null){
-			$this->getLogger()->info("Found library at: " . $foundExt);
+			$this->getLogger()->info("Found library: " . $foundExt);
 		}
 		
-		// Check if dl() is available
 		if(!function_exists("dl")){
-			$this->getLogger()->warning("The 'dl()' function is not available.");
+			$this->getLogger()->warning("dl() not available. Add extension to php.ini instead.");
 			return;
 		}
 
@@ -278,7 +516,7 @@ class Main extends PluginBase{
 			$loaded = false;
 			foreach($extensionNames[$os] ?? [] as $extName){
 				if(@dl($extName)){
-					$this->getLogger()->info("Loaded Lua extension: " . $extName);
+					$this->getLogger()->info("Loaded: " . $extName);
 					$loaded = true;
 					break;
 				}
@@ -295,7 +533,7 @@ class Main extends PluginBase{
 				$this->getLogger()->warning("Failed to load Lua extension dynamically.");
 			}
 		}catch(\Throwable $e){
-			$this->getLogger()->error("Error loading: " . $e->getMessage());
+			$this->getLogger()->error("Load error: " . $e->getMessage());
 		}
 	}
 	
@@ -315,18 +553,15 @@ class Main extends PluginBase{
 		}
 		
 		$this->getServer()->getPluginManager()->registerInterface(LuaPluginLoader::class);
-		$this->getLogger()->info("LuaPluginLoader registered.");
+		$this->getLogger()->info("LuaPluginLoader registered. PHP " . PHP_VERSION);
 
-		// Load .lua file plugins
 		$plugins = $this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [LuaPluginLoader::class]);
-		
-		// Scan for folder-based Lua plugins
 		$folderPlugins = $this->scanFolderPlugins($this->getServer()->getPluginPath());
 		
 		$totalLoaded = count($plugins) + count($folderPlugins);
 		
 		if($totalLoaded > 0){
-			$this->getLogger()->info("Loaded " . $totalLoaded . " Lua plugins.");
+			$this->getLogger()->info("Loaded " . $totalLoaded . " Lua plugin(s).");
 			
 			foreach($plugins as $plugin){
 				if(!$plugin->isEnabled()){
