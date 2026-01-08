@@ -328,41 +328,129 @@ class Main extends PluginBase{
 	}
 	
 	private function downloadFile($url, $targetDir){
+		$this->getLogger()->info("Connecting to: " . parse_url($url, PHP_URL_HOST));
+		
+		// Create context with better options
 		$context = stream_context_create([
 			"http" => [
 				"method" => "GET",
-				"header" => "User-Agent: LuaLoader/1.1\r\n",
+				"header" => [
+					"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) LuaLoader/1.1",
+					"Accept: */*",
+					"Connection: close"
+				],
 				"follow_location" => true,
-				"timeout" => 60
+				"max_redirects" => 5,
+				"timeout" => 120,
+				"ignore_errors" => false
 			],
-			"ssl" => ["verify_peer" => false, "verify_peer_name" => false]
+			"ssl" => [
+				"verify_peer" => false,
+				"verify_peer_name" => false,
+				"allow_self_signed" => true
+			]
 		]);
 		
+		// Try to download
 		$content = @file_get_contents($url, false, $context);
+		
 		if($content === false){
+			$error = error_get_last();
+			$this->getLogger()->error("Download failed: " . ($error['message'] ?? 'Unknown error'));
+			
+			// Try with cURL if available
+			if(function_exists('curl_init')){
+				$this->getLogger()->info("Trying cURL fallback...");
+				$content = $this->downloadWithCurl($url);
+			}
+		}
+		
+		if($content === false || strlen($content) < 1000){
+			$this->getLogger()->error("Download incomplete or failed. Size: " . ($content ? strlen($content) : 0));
 			return false;
 		}
 		
+		$this->getLogger()->info("Downloaded " . number_format(strlen($content)) . " bytes");
+		
 		$filename = basename(parse_url($url, PHP_URL_PATH));
 		
-		if(strpos($filename, ".zip") !== false){
+		// Handle ZIP files
+		if(strpos($filename, ".zip") !== false || strpos($url, ".zip") !== false){
 			$tempFile = $targetDir . DIRECTORY_SEPARATOR . "download.zip";
-			file_put_contents($tempFile, $content);
+			$written = file_put_contents($tempFile, $content);
+			
+			if($written === false){
+				$this->getLogger()->error("Failed to write ZIP file");
+				return false;
+			}
+			
+			$this->getLogger()->info("Saved ZIP: " . $tempFile . " (" . $written . " bytes)");
 			
 			if(class_exists("ZipArchive")){
 				$zip = new \ZipArchive();
-				if($zip->open($tempFile) === true){
+				$openResult = $zip->open($tempFile);
+				
+				if($openResult === true){
+					$this->getLogger()->info("Extracting " . $zip->numFiles . " files...");
+					
+					// Extract all files
 					$zip->extractTo($targetDir);
 					$zip->close();
-					unlink($tempFile);
+					
+					// List extracted files
+					$files = glob($targetDir . DIRECTORY_SEPARATOR . "*.dll");
+					foreach($files as $f){
+						$this->getLogger()->info("Extracted: " . basename($f));
+					}
+					
+					@unlink($tempFile);
 					return true;
+				}else{
+					$this->getLogger()->error("Failed to open ZIP. Error code: " . $openResult);
+					return false;
 				}
+			}else{
+				$this->getLogger()->warning("ZipArchive not available. Manual extract: " . $tempFile);
+				return true;
 			}
-			return true;
 		}
 		
-		file_put_contents($targetDir . DIRECTORY_SEPARATOR . $filename, $content);
+		// Non-ZIP file
+		$savePath = $targetDir . DIRECTORY_SEPARATOR . $filename;
+		file_put_contents($savePath, $content);
+		$this->getLogger()->info("Saved: " . $filename);
 		return true;
+	}
+	
+	/**
+	 * Fallback download using cURL
+	 */
+	private function downloadWithCurl($url){
+		$ch = curl_init();
+		curl_setopt_array($ch, [
+			CURLOPT_URL => $url,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_MAXREDIRS => 5,
+			CURLOPT_TIMEOUT => 120,
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_SSL_VERIFYHOST => false,
+			CURLOPT_USERAGENT => 'Mozilla/5.0 LuaLoader/1.1',
+			CURLOPT_HTTPHEADER => ['Accept: */*']
+		]);
+		
+		$content = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$error = curl_error($ch);
+		curl_close($ch);
+		
+		if($content !== false && $httpCode === 200){
+			$this->getLogger()->info("cURL success! HTTP " . $httpCode);
+			return $content;
+		}
+		
+		$this->getLogger()->error("cURL failed: HTTP $httpCode - $error");
+		return false;
 	}
 	
 	private function loadLuaExtension(){
