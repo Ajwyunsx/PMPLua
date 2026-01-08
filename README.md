@@ -1,4 +1,4 @@
-# LuaLoader Plugin for Genisys/PocketMine
+# PMPLua Plugin for Genisys/PocketMine
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
