@@ -243,26 +243,6 @@ class Main extends PluginBase{
 	private function installLinuxLibrary(){
 		$this->getLogger()->info("=== Linux Install ===");
 		
-		// Detect architecture
-		$arch = php_uname('m');
-		$isArm64 = in_array($arch, ['aarch64', 'arm64', 'armv8']);
-		$isArm32 = in_array($arch, ['armv7l', 'armv6l', 'arm']);
-		
-		$this->getLogger()->info("Architecture: " . $arch . ($isArm64 ? " (ARM64)" : ($isArm32 ? " (ARM32)" : " (x86/x64)")));
-		
-		// Check for Lua installation
-		$luaInstalled = !empty(trim(shell_exec("which lua 2>/dev/null") ?? ""));
-		if(!$luaInstalled){
-			$this->getLogger()->info("Installing Lua...");
-			if($isArm64 || $isArm32){
-				$this->getLogger()->info("ARM detected - using apt to install lua");
-				exec("apt-get update && apt-get install -y lua5.3 liblua5.3-dev 2>&1", $output, $retCode);
-			}else{
-				exec("apt-get update && apt-get install -y lua5.3 liblua5.3-dev 2>&1", $output, $retCode);
-			}
-		}
-		
-		// Try pecl install
 		$peclPath = trim(shell_exec("which pecl 2>/dev/null") ?? "");
 		
 		if(!empty($peclPath)){
@@ -275,21 +255,9 @@ class Main extends PluginBase{
 				$this->getLogger()->info("Success! Add 'extension=lua.so' to php.ini");
 				return true;
 			}
-			
-			// For ARM, try with specific configure options
-			if($isArm64 || $isArm32){
-				$this->getLogger()->info("ARM pecl failed, trying with configure options...");
-				exec("pecl install lua --with-lua=/usr 2>&1", $output, $returnCode);
-				if($returnCode === 0){
-					$this->getLogger()->info("Success with --with-lua=/usr!");
-					return true;
-				}
-			}
-			
 			$this->getLogger()->warning("pecl failed. Try: sudo pecl install lua");
 		}
 		
-		// Download source for manual build
 		$sourceUrl = self::$downloadUrls["linux"]["source"] ?? null;
 		if($sourceUrl){
 			$targetDir = $this->libsPath . DIRECTORY_SEPARATOR . "linux";
@@ -298,30 +266,12 @@ class Main extends PluginBase{
 			if($this->downloadFile($sourceUrl, $targetDir)){
 				$this->getLogger()->info("Source downloaded. Build with:");
 				$this->getLogger()->info("  cd $targetDir && tar xzf lua-2.0.7.tgz && cd lua-2.0.7");
-				if($isArm64){
-					$this->getLogger()->info("  # ARM64 specific:");
-					$this->getLogger()->info("  phpize && ./configure --with-lua=/usr && make && sudo make install");
-				}else{
-					$this->getLogger()->info("  phpize && ./configure && make && sudo make install");
-				}
+				$this->getLogger()->info("  phpize && ./configure && make && sudo make install");
 				return true;
 			}
 		}
 		
-		// Manual instructions
-		$this->getLogger()->info("=== Manual Installation ===");
-		if($isArm64){
-			$this->getLogger()->info("ARM64 (aarch64) detected:");
-			$this->getLogger()->info("  sudo apt install lua5.3 liblua5.3-dev php-dev");
-			$this->getLogger()->info("  sudo pecl install lua");
-			$this->getLogger()->info("  Or build from source with --with-lua=/usr");
-		}elseif($isArm32){
-			$this->getLogger()->info("ARM32 detected:");
-			$this->getLogger()->info("  sudo apt install lua5.3 liblua5.3-dev php-dev");
-			$this->getLogger()->info("  sudo pecl install lua");
-		}else{
-			$this->getLogger()->info("  sudo pecl install lua");
-		}
+		$this->getLogger()->info("Manual: sudo pecl install lua");
 		return false;
 	}
 	

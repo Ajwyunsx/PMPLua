@@ -98,7 +98,23 @@ class LuaPluginLoader implements PluginLoader{
 			if(preg_match("/^--[ \t]*@([a-zA-Z]+)([ \t]+(.*))?$/", $line, $matches) > 0){
 				$key = $matches[1];
 				$value = trim($matches[3] ?? "");
-				$data[$key] = $value;
+				
+				if($key === "commands"){
+					$cmds = explode(",", $value);
+					$data["commands"] = [];
+					foreach($cmds as $cmdStr){
+						$parts = explode(":", trim($cmdStr));
+						$name = trim($parts[0]);
+						if(!empty($name)){
+							$data["commands"][$name] = [
+								"description" => isset($parts[1]) ? trim($parts[1]) : "Lua command $name",
+								"usage" => isset($parts[2]) ? trim($parts[2]) : "/$name"
+							];
+						}
+					}
+				} else {
+					$data[$key] = $value;
+				}
 			}
 		}
 

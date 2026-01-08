@@ -279,8 +279,29 @@ class LuaPlugin extends PluginBase{
             return $this->getServer()->getTickUsage(); 
         });
         $this->lua->registerCallback("dispatchCommand", function($cmd) { 
-            return $this->getServer()->dispatchCommand($this->getServer()->getConsoleSender(), $cmd); 
+            return $this->getServer()->dispatchCommand($this->getConsoleSender(), $cmd); 
         });
+    }
+    
+    /**
+     * Get console sender safely
+     */
+    private function getConsoleSender(){
+        $server = $this->getServer();
+        if(method_exists($server, "getConsoleSender")){
+            return $server->getConsoleSender();
+        }
+        if(isset($server->consoleSender)){
+            return $server->consoleSender;
+        }
+        // If we still can't find it, return a dummy object that logs to console
+        return new class($server->getLogger()) {
+            private $logger;
+            public function __construct($logger) { $this->logger = $logger; }
+            public function sendMessage($msg) { $this->logger->info($msg); }
+            public function getName() { return "CONSOLE"; }
+            public function isOp() { return true; }
+        };
     }
     
     /**
@@ -315,13 +336,14 @@ class LuaPlugin extends PluginBase{
             return $this->getServer()->getPlayerExact($name);
         });
         
-        // Send message to player
         $this->lua->registerCallback("sendMessage", function($player, $msg) {
-            if($player instanceof CommandSender){
-                $player->sendMessage($msg);
+            if($player === "CONSOLE"){
+                $this->getConsoleSender()->sendMessage($msg);
             } elseif(is_string($player)){
                 $p = $this->getServer()->getPlayer($player);
                 if($p !== null) $p->sendMessage($msg);
+            } elseif($player instanceof CommandSender){
+                $player->sendMessage($msg);
             }
         });
         
@@ -427,6 +449,7 @@ class LuaPlugin extends PluginBase{
         
         // Check if player is op
         $this->lua->registerCallback("isOp", function($player) {
+            if($player === "CONSOLE") return true;
             $p = ($player instanceof Player) ? $player : $this->getServer()->getPlayer($player);
             return $p instanceof Player ? $p->isOp() : false;
         });
@@ -693,7 +716,7 @@ class LuaPlugin extends PluginBase{
     public function onCommand(CommandSender $sender, Command $command, $label, array $args){
         if($this->lua !== null){
              try {
-                 $this->lua->assign("_cmd_sender", $sender);
+                 $this->lua->assign("_cmd_sender", $sender->getName());
                  $this->lua->assign("_cmd_command_name", $command->getName());
                  $this->lua->assign("_cmd_label", $label);
                  $this->lua->assign("_cmd_args", $args);
