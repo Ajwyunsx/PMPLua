@@ -17,6 +17,28 @@ class Main extends PluginBase{
 	 */
 	private static $downloadUrls = [
 		"windows" => [
+			// PHP 7.0 and 7.1 use lua 2.0.3 (older version)
+			"7.0" => [
+				"x64" => [
+					"ts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.0-ts-vc14-x64.zip",
+					"nts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.0-nts-vc14-x64.zip"
+				],
+				"x86" => [
+					"ts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.0-ts-vc14-x86.zip",
+					"nts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.0-nts-vc14-x86.zip"
+				]
+			],
+			"7.1" => [
+				"x64" => [
+					"ts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.1-ts-vc14-x64.zip",
+					"nts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.1-nts-vc14-x64.zip"
+				],
+				"x86" => [
+					"ts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.1-ts-vc14-x86.zip",
+					"nts" => "http://windows.php.net/downloads/pecl/releases/lua/2.0.3/php_lua-2.0.3-7.1-nts-vc14-x86.zip"
+				]
+			],
+			// PHP 7.2+ use lua 2.0.7
 			"7.2" => [
 				"x64" => [
 					"ts" => "https://downloads.php.net/~windows/pecl/releases/lua/2.0.7/php_lua-2.0.7-7.2-ts-vc15-x64.zip",
