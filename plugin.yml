@@ -3,7 +3,7 @@ main: LuaLoader\Main
 version: 1.1.0
 api: [2.0.0]
 load: STARTUP
-author: Gemini
+author: Ajwwk and Gemini
 description: Adds support for Lua plugins with cross-platform library support.
 
 commands:
