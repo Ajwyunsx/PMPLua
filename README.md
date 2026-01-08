@@ -2,6 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+**English** | [中文](README_CN.md)
+
 A plugin that enables Lua scripting support for Genisys/PocketMine-MP servers.
 
 ## Features
